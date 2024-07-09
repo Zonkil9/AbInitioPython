@@ -30,4 +30,4 @@ Execute the command to start the program:
 
 ## Disclaimer
 
-There are five files inside this repo with integrals calculated for LiH molecule using a modified version of `ACES2`: `dipole`, `jobpar`, `oneelint`, `twoelnew`, `twoeltemp`.
+There are six files inside this repo with integrals calculated for LiH molecule using a modified version of `ACES2`: `dipole`, `jobpar`, `oneelint`, `twoelnew`, `twoeltemp`, 'vmoltemp'.
