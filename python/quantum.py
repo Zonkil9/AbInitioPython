@@ -2,7 +2,11 @@ import numpy as np
 import sys
 
 def driver():
-    jobpar = open("jobpar", "r")
+    try:
+        jobpar = open("jobpar", "r")
+    except:
+        print("jobpar file not found! Are you sure you provided the correct basis set and it is available in GENBAS?")
+        sys.exit("Aborting execution!")
     nirrep = np.fromfile(jobpar,dtype="int64",count=1) #number of irreducible representations
     nirrep = np.int64(nirrep[0])
     n = np.fromfile(jobpar,dtype="int64",count=60) #number of basis functions
@@ -110,7 +114,7 @@ def prefock(n, n2el): #procedure to solve for S^-1/2 matrix
 
 def fock(ej, n, ekin, epot, noc, s12): #RHF main procedure
     niter = 100
-    thresh = 1.0e-13
+    thresh = 1.0e-7
     damping = 0.5 #damping parameter to enhance convergence
     escf = ej
     ca = np.zeros((n,n)) #SCF coefficients matrix
@@ -268,7 +272,7 @@ def mp3(noc, nu, c2, vr, vl, vh, vp, escf, mp2): #MP3
 
 def lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
     niter = 100
-    thresh = 1.0e-10
+    thresh = 1.0e-7
     ecorr_lccd = mp2
     c2o = c2
     ecorrold = 0
@@ -306,7 +310,7 @@ def lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
     
 def cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
     niter = 100
-    thresh = 1.0e-10
+    thresh = 1.0e-7
     ecorr_cid = mp2
     c2o = c2
     ecorrold = 0
@@ -498,7 +502,7 @@ def finite_field(n, dipole_raw, ekin, epot, ej, dipnu, noc, s12, nu, vr, vl, vh,
                efield = field * -2
      
             niter = 200
-            thresh = 1.0e-13
+            thresh = 1.0e-7
             damping = 0.5
             ca_new = np.zeros((n,n)) #SCF coefficients matrix
             fa_new = np.zeros((n,n)) #Fock matrix
