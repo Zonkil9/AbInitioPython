@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 def driver():
     jobpar = open("jobpar", "r")
@@ -158,8 +159,13 @@ def fock(ej, n, ekin, epot, noc, s12): #RHF main procedure
        
        iteration = iteration + 1
        
-    print("RHF energy =", escf)
-    print("Converged in", iteration - 1, "iterations")
+    if(iteration == niter):
+       print("Couldn't converge in", iteration, "iterations!")
+       print("Aborting execution of the program!")
+       sys.exit("Did NOT converge RHF")
+    else:
+       print("RHF energy =", escf)
+       print("Converged in", iteration - 1, "iterations")
     return ca, escf, fap, pa
 
 def trans4(n, ca): #four-index transformation, used in post-HF methods
@@ -177,13 +183,13 @@ def trans4(n, ca): #four-index transformation, used in post-HF methods
             for u in range(0,n):  
                 twoel_raw = np.fromfile(twoelfile,dtype="float64",count=n*n*n)
                 twoel = np.reshape(twoel_raw,(n,n,n))
-                temp[:,:,:,l] += ca[u,l]*twoel[:,:,:]  
+                temp[:,:,:,l] = np.add(temp[:,:,:,l], ca[u,l]*twoel[:,:,:], out=temp[:,:,:,l], casting="unsafe")  
             for k in range(0,n):  
                 for t in range(0,n):  
-                    temp2[:,:,k,l] += ca[t,k]*temp[:,:,t,l]  
+                    temp2[:,:,k,l] = np.add(temp2[:,:,k,l], ca[t,k]*temp[:,:,t,l], out=temp2[:,:,k,l], casting="unsafe")  
                 for j in range(0,n):  
                     for s in range(0,n):  
-                        temp3[:,j,k,l] += ca[s,j]*temp2[:,s,k,l]  
+                        temp3[:,j,k,l] = np.add(temp3[:,j,k,l], ca[s,j]*temp2[:,s,k,l], out=temp3[:,j,k,l], casting="unsafe")  
                     for i in range(0,n):  
                         for r in range(0,n):  
                             vmol_raw[i,j,k,l] += ca[r,i]*temp3[r,j,k,l]
@@ -289,9 +295,13 @@ def lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
          iteration = iteration + 1
        
     lccd = escf + ecorr_lccd
-    print("LCCD energy =", lccd)
-    print("Converged in", iteration - 1, "iterations")
-
+    if(iteration == niter):
+       print("Couldn't converge in", iteration, "iterations!")
+       print("Aborting execution of the program!")
+       sys.exit("Did NOT converge LCCD")
+    else:
+       print("LCCD energy =", lccd)
+       print("Converged in", iteration - 1, "iterations")
     return lccd, ecorr_lccd
     
 def cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
@@ -323,9 +333,13 @@ def cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
          iteration = iteration + 1
        
     cid = escf + ecorr_cid
-    print("CID energy =", cid)
-    print("Converged in", iteration - 1, "iteration")
-
+    if(iteration == niter):
+       print("Couldn't converge in", iteration, "iterations!")
+       print("Aborting execution of the program!")
+       sys.exit("Did NOT converge CID")
+    else:
+       print("CID energy =", cid)
+       print("Converged in", iteration - 1, "iteration")
     return cid, ecorr_cid
 
 def dipole(natms, coord, nch, n, dipole_raw, ca, noc, pa): #dipole moment
