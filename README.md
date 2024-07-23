@@ -23,6 +23,15 @@ The program works only on the Linux 64bit machine. It also needs Python 3+ and t
 pip install numpy
 ```
 
+## Compatibility issues
+
+If you ever encounter the error related to the `libgfortran.so.3` library, e.g.:
+
+```sh
+error while loading shared libraries: libgfortran.so.3: cannot open shared object file: No such file or directory
+```
+Then, you should execute the `compatibility.sh` script from the `compatibility` directory and provide the sudo password.
+
 ## Usage
 
 Execute the command to start the program:
@@ -30,6 +39,8 @@ Execute the command to start the program:
 ./abipy.sh
 ```
 
+You can modify the `ZMAT` file to change the studied molecule and/or the basis set used in calculations.
+
 ## Disclaimer
 
-The `ACES2` Program is a Product of the Quantum Theory Project; University of Florida: Gainesville, FL, USA, 2005. For more, see LICENSE file in the `aces2` directory and their [GitHub repository](https://github.com/ajithperera/ACES-II).
+The `ACES2` Program is a Product of the Quantum Theory Project; University of Florida: Gainesville, FL, USA, 2005. For more, see the LICENSE file in the `ACES2` directory and their [GitHub repository](https://github.com/ajithperera/ACES-II).
