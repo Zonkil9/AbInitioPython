@@ -25,12 +25,15 @@ pip install numpy
 
 ## Compatibility issues
 
-If you ever encounter the error related to the `libgfortran.so.3` library, e.g.:
+You may encounter the error related to the `libgfortran.so.3` library, e.g.:
 
 ```sh
 error while loading shared libraries: libgfortran.so.3: cannot open shared object file: No such file or directory
 ```
-Then, you should execute the `compatibility.sh` script from the `compatibility` directory and provide the sudo password.
+
+It is due to `libgfortran.so.3` is not distributed with recent Debian and Ubuntu distributions. If you are running the Debian machine,
+you should execute the `compatibility.sh` script from the `compatibility` directory and provide the sudo password -- the script installs
+the required library.
 
 ## Usage
 
@@ -41,6 +44,8 @@ Execute the command to start the program:
 
 You can modify the `ZMAT` file to change the studied molecule and/or the basis set used in calculations.
 
-## Disclaimer
+## Acknowledgements
 
-The `ACES2` Program is a Product of the Quantum Theory Project; University of Florida: Gainesville, FL, USA, 2005. For more, see the LICENSE file in the `ACES2` directory and their [GitHub repository](https://github.com/ajithperera/ACES-II).
+The author wishes to gratefully acknowledge the support and helpful advice of Prof. Stanisław A. Kucharski during the development of this code.
+
+The `ACES2` Program is a Product of the Quantum Theory Project; University of Florida: Gainesville, FL, USA, 2005. For more, see their [GitHub repository](https://github.com/ajithperera/ACES-II).
