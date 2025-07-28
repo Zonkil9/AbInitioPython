@@ -1,5 +1,5 @@
 # AbInitioPython
-This is a simple Python program for basic *ab initio* calculations. It was written just as a proof of concept and a test of the author's understanding of Hartree-Fock and post-Hartree-Fock methods. <ins>**AbInitioPython** is slow, unoptimized, and unintuitive.</ins> For a real Python implementation of computational chemistry methods, the author recommends [PySCF](https://github.com/pyscf/pyscf).
+This is a simple Python program for basic *ab initio* calculations. It was written as a proof of concept and a test of the author's understanding of Hartree-Fock and post-Hartree-Fock methods. For a <ins>real</ins> Python implementation of computational chemistry methods, the author recommends [PySCF](https://github.com/pyscf/pyscf) and [PyBEST](https://fizyka.umk.pl/~pybest/).
 
 AbInitioPython is unable to prepare integrals needed in calculations on its own -- it uses integrals generated using the [ACES2](https://github.com/ajithperera/ACES-II) software.
 
