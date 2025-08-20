@@ -23,18 +23,6 @@ The program works only on the Linux 64bit machine. It also needs Python 3+ and t
 pip install numpy
 ```
 
-## Compatibility issues
-
-You may encounter the error related to the `libgfortran.so.3` library, e.g.:
-
-```sh
-error while loading shared libraries: libgfortran.so.3: cannot open shared object file: No such file or directory
-```
-
-It is due to `libgfortran.so.3` is not distributed with recent Debian and Ubuntu distributions. If you are running the Debian machine,
-you should execute the `compatibility.sh` script from the `compatibility` directory and provide the sudo password -- the script installs
-the required library.
-
 ## Usage
 
 Execute the command to start the program:

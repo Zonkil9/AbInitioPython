@@ -1,10 +1,12 @@
 import numpy as np
 import sys
 
+np.set_printoptions(legacy='1.25')
+
 def driver():
     try:
         jobpar = open("jobpar", "r")
-    except:
+    except FileNotFoundError:
         print("jobpar file not found! Are you sure you provided the correct basis set and it is available in GENBAS?")
         sys.exit("Aborting execution!")
     nirrep = np.fromfile(jobpar,dtype="int64",count=1) #number of irreducible representations
@@ -49,7 +51,7 @@ def driver():
     print("Atomic coordinates:", coord)
     print("Atomic charges:", nch)
     nu = n - noc
-    return(nirrep, n, ej, noc, nu, n2el, natms, coord, nch)
+    return nirrep, n, ej, noc, nu, n2el, natms, coord, nch
 
 def prefock(n, n2el): #procedure to solve for S^-1/2 matrix
     oneelint = open("oneelint", "r")
@@ -118,7 +120,6 @@ def fock(ej, n, ekin, epot, noc, s12): #RHF main procedure
     damping = 0.5 #damping parameter to enhance convergence
     escf = ej
     ca = np.zeros((n,n)) #SCF coefficients matrix
-    fa = np.zeros((n,n)) #Fock matrix
     pa = np.zeros((n,n))
     h = ekin + epot #single-electron operator matrix E_kin + E_pot
     escfold = 0
@@ -126,12 +127,11 @@ def fock(ej, n, ekin, epot, noc, s12): #RHF main procedure
 
     print("Commencing RHF calculations...")
 
-    while(np.absolute(escf-escfold) > thresh and iteration < niter):
-       if (iteration != 1):
+    while np.absolute(escf-escfold) > thresh and iteration < niter:
+       if iteration != 1:
           escfold = escf
 
        for i in range(0, n):
-           x = np.float64(0)
            x = 2 * ca[i,:noc] * ca[:,:noc]
            x = np.sum(x,axis=1)
            pa[i,:] = damping*pa[i,:] + (1 - damping) * x
@@ -147,7 +147,7 @@ def fock(ej, n, ekin, epot, noc, s12): #RHF main procedure
 
        twoelfile.close()
        
-       fa = h + x
+       fa = h + x #Fock matrix
 
        escf = 0.5 * pa * (h + fa)
        escf = ej + np.sum(escf)
@@ -163,7 +163,7 @@ def fock(ej, n, ekin, epot, noc, s12): #RHF main procedure
        
        iteration = iteration + 1
        
-    if(iteration == niter):
+    if iteration == niter:
        print("Couldn't converge in", iteration, "iterations!")
        print("Aborting execution of the program!")
        sys.exit("Did NOT converge RHF")
@@ -236,8 +236,6 @@ def sortab(n, noc, nu): #sorting
     return vh, vp, vl, vr
 
 def mp2(noc, nu, fap, vr, escf): #MP2
-    mp2 = np.float64(0)
-    c2 = np.zeros((noc,nu,nu,noc))
     den = np.zeros((noc,nu,nu,noc))
     
     for i in range(0, noc):
@@ -253,9 +251,7 @@ def mp2(noc, nu, fap, vr, escf): #MP2
     print("Total MP2 energy:", escf+mp2)
     return c2, den, mp2
 
-def mp3(noc, nu, c2, vr, vl, vh, vp, escf, mp2): #MP3
-    mp3 = np.float64(0)
-    c2n = np.zeros((noc,nu,nu,noc))
+def mp3(c2, vr, vl, vh, vp, escf, mp2): #MP3
     temp1 = np.einsum('mebj,meai->iabj', c2,vr) * 2 + np.einsum('meai,mebj->iabj', c2,vr) * 2
     temp2 = np.einsum('mbej,meai->iabj', c2,vr) * -1 - np.einsum('maei,mebj->iabj', c2,vr)
     temp3 = np.einsum('mebj,iaem->iabj', c2,vl) * -1 - np.einsum('meai,jbem->iabj', c2,vl)
@@ -270,16 +266,15 @@ def mp3(noc, nu, c2, vr, vl, vh, vp, escf, mp2): #MP3
     print("Total MP3 energy:", escf+mp2+mp3)
     return mp3    
 
-def lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
+def lccd(c2, mp2, vr, vl, vh, vp, escf, den):
     niter = 100
     thresh = 1.0e-7
     ecorr_lccd = mp2
     c2o = c2
     ecorrold = 0
     iteration = 1
-    c2n = np.zeros((noc,nu,nu,noc))
-    while(np.absolute(ecorr_lccd-ecorrold) > thresh and iteration < niter):
-         if (iteration != 1):
+    while np.absolute(ecorr_lccd-ecorrold) > thresh and iteration < niter :
+         if iteration != 1 :
              ecorrold = ecorr_lccd
 
          temp1 = np.einsum('mebj,meai->iabj', c2o,vr) * 2
@@ -299,7 +294,7 @@ def lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
          iteration = iteration + 1
        
     lccd = escf + ecorr_lccd
-    if(iteration == niter):
+    if iteration == niter :
        print("Couldn't converge in", iteration, "iterations!")
        print("Aborting execution of the program!")
        sys.exit("Did NOT converge LCCD")
@@ -308,16 +303,15 @@ def lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
        print("Converged in", iteration - 1, "iterations")
     return lccd, ecorr_lccd
     
-def cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
+def cid(c2, mp2, vr, vl, vh, vp, escf, den):
     niter = 100
     thresh = 1.0e-7
     ecorr_cid = mp2
     c2o = c2
     ecorrold = 0
     iteration = 1
-    c2n = np.zeros((noc,nu,nu,noc))
-    while(np.absolute(ecorr_cid-ecorrold) > thresh and iteration < niter):
-         if (iteration != 1):
+    while np.absolute(ecorr_cid-ecorrold) > thresh and iteration < niter :
+         if iteration != 1 :
              ecorrold = ecorr_cid
 
          temp1 = np.einsum('mebj,meai->iabj', c2o,vr) * 2
@@ -337,7 +331,7 @@ def cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
          iteration = iteration + 1
        
     cid = escf + ecorr_cid
-    if(iteration == niter):
+    if iteration == niter:
        print("Couldn't converge in", iteration, "iterations!")
        print("Aborting execution of the program!")
        sys.exit("Did NOT converge CID")
@@ -349,14 +343,14 @@ def cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den):
 def dipole(natms, coord, nch, n, dipole_raw, ca, noc, pa): #dipole moment
     print("Calculating the RHF dipole moment...")
 
-    dipnu = np.zeros((3))
+    dipnu = np.zeros(3)
     for i in range (0, 3):
         for j in range (0,natms):
             dipnu[i] = dipnu[i] + coord[i,j] * nch[j] #nuclei dipole moment
 
     t = 0
-    dipel = np.zeros((3))
-    dipel2 = np.zeros((3))
+    dipel = np.zeros(3)
+    dipel2 = np.zeros(3)
     for p in range(0,3):
        datm = np.zeros((n,n))
        dmol = np.zeros((n,n))
@@ -380,7 +374,7 @@ def dipole(natms, coord, nch, n, dipole_raw, ca, noc, pa): #dipole moment
            for j in range(0,n):
                dipel2[p] += pa[i,j] * datm[i,j] #electron dipole moment calculated with method 2
 
-    dipole_moment = np.zeros((3))
+    dipole_moment = np.zeros(3)
     for i in range (0,3):
         dipole_moment[i] = dipnu[i] + dipel[i]
         if np.absolute(dipole_moment[i]) < 10e-12:
@@ -392,11 +386,11 @@ def dipole(natms, coord, nch, n, dipole_raw, ca, noc, pa): #dipole moment
     print("Total dipole moment:", total_dipole_moment)
     return dipole_moment, total_dipole_moment, dipnu, dipel
 
-def quadrupole(natms, nch, coord, n, dipole_raw, pa): #moment kwadrupolowy
+def quadrupole(natms, nch, coord, n, dipole_raw, pa): #quadrupole moment
     print("Calculating the RHF quadruple moment...")
 
-    tempquad = np.zeros((6))
-    quadnuc = np.zeros((6))
+    tempquad = np.zeros(6)
+    quadnuc = np.zeros(6)
     a=0
     for ic in range(0,3):
         for jc in range(0,ic+1):
@@ -424,10 +418,9 @@ def quadrupole(natms, nch, coord, n, dipole_raw, pa): #moment kwadrupolowy
         t += i
     t = t * 3
 
-    quadel = np.zeros((6))
+    quadel = np.zeros(6)
     for p in range(0,6):
        datm = np.zeros((n,n))
-       dmol = np.zeros((n,n))
        for r in range(0,n):
            for s in range(0,r+1):
                datm[r,s]=dipole_raw[t]
@@ -437,7 +430,7 @@ def quadrupole(natms, nch, coord, n, dipole_raw, pa): #moment kwadrupolowy
            for j in range (0,n):
                quadel[p] += pa[i,j] * datm[i,j]
 
-    quadrupole_moment = np.zeros((6))
+    quadrupole_moment = np.zeros(6)
     for i in range (0,6):
         quadrupole_moment[i] = quadnuc[i] + quadel[i]
         if np.absolute(quadrupole_moment[i]) < 10e-12:
@@ -453,17 +446,11 @@ def quadrupole(natms, nch, coord, n, dipole_raw, pa): #moment kwadrupolowy
 def finite_field(n, dipole_raw, ekin, epot, ej, dipnu, noc, s12, nu, vr, vl, vh, vp, escf, mp2, mp3): #finite-field approach
     field = 0.0002
     dipole_moment_ff_hf = [0,0,0]
-    total_dipole_moment_ff_hf = 0
     alpha_ff_hf = [0,0,0]
-    alpha_ave_ff_hf = 0
     dipole_moment_ff_mp2 = [0,0,0]
-    total_dipole_moment_ff_mp2 = 0
     alpha_ff_mp2 = [0,0,0]
-    alpha_ave_ff_mp2 = 0
     dipole_moment_ff_mp3 = [0,0,0]
-    total_dipole_moment_ff_mp3 = 0
     alpha_ff_mp3 = [0,0,0]
-    alpha_ave_ff_mp3 = 0
     hfield = np.zeros((n,n))
     escf_x = []
     escf_y = []
@@ -505,7 +492,6 @@ def finite_field(n, dipole_raw, ekin, epot, ej, dipnu, noc, s12, nu, vr, vl, vh,
             thresh = 1.0e-7
             damping = 0.5
             ca_new = np.zeros((n,n)) #SCF coefficients matrix
-            fa_new = np.zeros((n,n)) #Fock matrix
             pa_new = np.zeros((n,n))
             h = ekin + epot #single-electron operator matrix E_kin + E_pot
             escfold = 0
@@ -517,12 +503,11 @@ def finite_field(n, dipole_raw, ekin, epot, ej, dipnu, noc, s12, nu, vr, vl, vh,
             ejfield = ej + efield*dipnu[a]
             escf_new = ejfield
 
-            while(np.absolute(escf_new-escfold) > thresh and iteration < niter):
-               if (iteration != 1):
+            while np.absolute(escf_new - escfold) > thresh and iteration < niter:
+               if iteration != 1:
                   escfold = escf_new
 
                for i in range(0, n):
-                   x = np.float64(0)
                    x = 2 * ca_new[i,:noc] * ca_new[:,:noc]
                    x = np.sum(x,axis=1)
                    pa_new[i,:] = damping*pa_new[i,:] + (1 - damping) * x
@@ -539,7 +524,7 @@ def finite_field(n, dipole_raw, ekin, epot, ej, dipnu, noc, s12, nu, vr, vl, vh,
 
                twoelfile.close()
        
-               fa_new = hfield + x
+               fa_new = hfield + x #Fock matrix
 
                escf_new = 0.5 * pa_new * (hfield + fa_new)
                escf_new = ejfield + np.sum(escf_new)
@@ -561,9 +546,6 @@ def finite_field(n, dipole_raw, ekin, epot, ej, dipnu, noc, s12, nu, vr, vl, vh,
             if a == 2:
                escf_z.append(escf_new)
 
-            #For MP2 and MP3 iterators are changed because they mixed with the ones before
-            mp2_new = np.float64(0)
-            c2_new = np.zeros((noc,nu,nu,noc))
             den = np.zeros((noc,nu,nu,noc))
 
             for ii in range(0, noc):
@@ -582,15 +564,7 @@ def finite_field(n, dipole_raw, ekin, epot, ej, dipnu, noc, s12, nu, vr, vl, vh,
                mp2_y.append(escf_new+mp2_new)
             if a == 2:
                mp2_z.append(escf_new+mp2_new)
-        
-            mp3_new = np.float64(0)
-            c2n_new = np.zeros((noc,nu,nu,noc))
-            temp1 = np.zeros((noc,nu,nu,noc))
-            temp2 = np.zeros((noc,nu,nu,noc))
-            temp3 = np.zeros((noc,nu,nu,noc))
-            temp4 = np.zeros((noc,nu,nu,noc))
-            temp5 = np.zeros((noc,nu,nu,noc))
-            temp6 = np.zeros((noc,nu,nu,noc))
+
             temp1 = np.einsum('mebj,meai->iabj', c2_new,vr) * 2 + np.einsum('meai,mebj->iabj', c2_new,vr) * 2
             temp2 = np.einsum('mbej,meai->iabj', c2_new,vr) * -1 - np.einsum('maei,mebj->iabj', c2_new,vr)
             temp3 = np.einsum('mebj,iaem->iabj', c2_new,vl) * -1 - np.einsum('meai,jbem->iabj', c2_new,vl)

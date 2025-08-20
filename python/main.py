@@ -14,7 +14,7 @@ control = int(control)
 
 start_time = time.time()
 
-if (control == 1): #RHF only
+if control == 1: #RHF only
     start_hf_time = time.time()
     nirrep, n, ej, noc, nu, n2el, natms, coord, nch = quantum.driver()
     s12, ovrl, ekin, epot, dipole_raw = quantum.prefock(n, n2el) #Loading integrals from prefock procedure
@@ -26,7 +26,7 @@ if (control == 1): #RHF only
     end_time = time.time()
     print("Total calculations time: ", round(end_time - start_time, 2), "seconds")
 
-elif (control == 2): #RHF + MP2
+elif control == 2: #RHF + MP2
     start_hf_time = time.time()
     nirrep, n, ej, noc, nu, n2el, natms, coord, nch = quantum.driver()
     s12, ovrl, ekin, epot, dipole_raw = quantum.prefock(n, n2el) #Loading integrals from prefock procedure
@@ -46,7 +46,7 @@ elif (control == 2): #RHF + MP2
     end_time = time.time()
     print("Total calculations time: ", round(end_time - start_time, 2), "seconds")
     
-elif (control == 3): #HF + MP2 + MP3
+elif control == 3: #HF + MP2 + MP3
     start_hf_time = time.time()
     nirrep, n, ej, noc, nu, n2el, natms, coord, nch = quantum.driver()
     s12, ovrl, ekin, epot, dipole_raw = quantum.prefock(n, n2el) #Loading integrals from prefock procedure
@@ -64,11 +64,11 @@ elif (control == 3): #HF + MP2 + MP3
     print("MP2 calculations in progress...")
     c2, den, mp2 = quantum.mp2(noc, nu, fap, vr, escf) #MP2
     print("MP3 calculations in progress...")
-    mp3 = quantum.mp3(noc, nu, c2, vr, vl, vh, vp, escf, mp2) #MP3
+    mp3 = quantum.mp3(c2, vr, vl, vh, vp, escf, mp2) #MP3
     end_time = time.time()
     print("Total calculations time: ", round(end_time - start_time, 2), "seconds")
 
-elif (control == 4): #HF + MP2 + MP3 + LCCD
+elif control == 4: #HF + MP2 + MP3 + LCCD
     start_hf_time = time.time()
     nirrep, n, ej, noc, nu, n2el, natms, coord, nch = quantum.driver()
     s12, ovrl, ekin, epot, dipole_raw = quantum.prefock(n, n2el) #Loading integrals from prefock procedure
@@ -86,16 +86,16 @@ elif (control == 4): #HF + MP2 + MP3 + LCCD
     print("MP2 calculations in progress...")
     c2, den, mp2 = quantum.mp2(noc, nu, fap, vr, escf) #MP2
     print("MP3 calculations in progress...")
-    mp3 = quantum.mp3(noc, nu, c2, vr, vl, vh, vp, escf, mp2) #MP3
+    mp3 = quantum.mp3(c2, vr, vl, vh, vp, escf, mp2) #MP3
     print("LCCD calculations in progress...")
     start_lccd_time = time.time()
-    lccd, ecorr_lccd = quantum.lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den)
+    lccd, ecorr_lccd = quantum.lccd(c2, mp2, vr, vl, vh, vp, escf, den)
     end_lccd_time = time.time()
     print("LCCD calculations time: ", round(end_lccd_time - start_lccd_time, 2), "seconds")
     end_time = time.time()
     print("Total calculations time: ", round(end_time - start_time, 2), "seconds")
 
-elif (control == 5): #HF + MP2 + MP3 + CID
+elif control == 5: #HF + MP2 + MP3 + CID
     start_hf_time = time.time()
     nirrep, n, ej, noc, nu, n2el, natms, coord, nch = quantum.driver()
     s12, ovrl, ekin, epot, dipole_raw = quantum.prefock(n, n2el) #Loading integrals from prefock procedure
@@ -113,16 +113,16 @@ elif (control == 5): #HF + MP2 + MP3 + CID
     print("MP2 calculations in progress...")
     c2, den, mp2 = quantum.mp2(noc, nu, fap, vr, escf) #MP2
     print("MP3 calculations in progress...")
-    mp3 = quantum.mp3(noc, nu, c2, vr, vl, vh, vp, escf, mp2) #MP3
+    mp3 = quantum.mp3(c2, vr, vl, vh, vp, escf, mp2) #MP3
     print("CID calculations in progress...")
     start_cid_time = time.time()
-    cid, ecorr_cid = quantum.cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den)
+    cid, ecorr_cid = quantum.cid(c2, mp2, vr, vl, vh, vp, escf, den)
     end_cid_time = time.time()
     print("CID calculations time: ", round(end_cid_time - start_cid_time, 2), "seconds")
     end_time = time.time()
     print("Total calculations time: ", round(end_time - start_time, 2), "seconds")
 
-elif (control == 6): #HF + MP2 + MP3 + LCCD + CID + finite-field properties (all)
+elif control == 6: #HF + MP2 + MP3 + LCCD + CID + finite-field properties (all)
     start_hf_time = time.time()
     nirrep, n, ej, noc, nu, n2el, natms, coord, nch = quantum.driver()
     s12, ovrl, ekin, epot, dipole_raw = quantum.prefock(n, n2el) #Loading integrals from prefock procedure
@@ -140,15 +140,15 @@ elif (control == 6): #HF + MP2 + MP3 + LCCD + CID + finite-field properties (all
     print("MP2 calculations in progress...")
     c2, den, mp2 = quantum.mp2(noc, nu, fap, vr, escf) #MP2
     print("MP3 calculations in progress...")
-    mp3 = quantum.mp3(noc, nu, c2, vr, vl, vh, vp, escf, mp2) #MP3
+    mp3 = quantum.mp3(c2, vr, vl, vh, vp, escf, mp2) #MP3
     print("LCCD calculations in progress...")
     start_lccd_time = time.time()
-    lccd, ecorr_lccd = quantum.lccd(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den)
+    lccd, ecorr_lccd = quantum.lccd(c2, mp2, vr, vl, vh, vp, escf, den)
     end_lccd_time = time.time()
     print("LCCD calculations time: ", round(end_lccd_time - start_lccd_time, 2), "seconds")
     print("CID calculations in progress...")
     start_cid_time = time.time()
-    cid, ecorr_cid = quantum.cid(c2, noc, nu, mp2, vr, vl, vh, vp, escf, den)
+    cid, ecorr_cid = quantum.cid(c2, mp2, vr, vl, vh, vp, escf, den)
     end_cid_time = time.time()
     print("CID calculations time: ", round(end_cid_time - start_cid_time, 2), "seconds")
     start_ff_time = time.time()
